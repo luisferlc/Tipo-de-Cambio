@@ -1,5 +1,4 @@
 import json
-import pandas as pd
 from sie_banxico import SIEBanxico
 
 
