@@ -1,41 +1,24 @@
 
 import json
-import datetime
+import pendulum
 from sie_banxico import SIEBanxico
 import airflow
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 
-## Open token file
-with open("token.json") as infile:
-    json_obj = json.load(infile)
-    token = json_obj["token"]
-
-# Series: 
-"""
-SF43718 - Pesos por Dólar. FIX: Esta serie representa el tipo de cambio FIX. 
-El tipo de cambio FIX es determinado por el Banco de México y publicado en el Diario Oficial de la Federación. 
-Se utiliza en operaciones denominadas en dólares pagaderas en la República Mexicana1
-"""
-id_series = ["SF43718"]
-
-# Crea una instancia de la API
-api = SIEBanxico(token=token, id_series=id_series, language='es')
-
-# Ahora puedes hacer consultas a la API
-#metadata = api.get_metadata()
-last_data = api.get_lastdata()
+# Create a timezone object for UTC-6
+timezone = pendulum.timezone('Etc/GMT+6')
 
 dag = DAG(
     dag_id="tipo_cambio_mx_us",
-    start_date=datetime(2024,5,28),
-    schedule_interval="@daily"
+    start_date=pendulum.datetime(2024,5,28, 11, 0, tz = timezone),
+    schedule_interval='0 11 * * *'
 )
 
 def _get_banxico_data():
     ## Open token file
-    with open("token.json") as infile:
+    with open("/opt/airflow/files/token.json") as infile: #carpeta creada en la carpeta docker airflow.
         json_obj = json.load(infile)
         token = json_obj["token"]
 
@@ -67,9 +50,9 @@ def print_tipo_cambio_results():
     print(f"fecha: {fecha}")
     print(f"dato: {dato}")
 
-notify = BashOperator(
+notify = PythonOperator(
     task_id="notify",
-    bash_command= print_tipo_cambio_results,
+    python_callable= print_tipo_cambio_results,
     dag=dag
 )
 
