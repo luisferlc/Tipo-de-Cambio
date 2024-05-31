@@ -30,6 +30,8 @@ def _get_banxico_data():
 
     # Ahora puedes hacer consultas a la API
     last_data = api.get_lastdata()
+    
+    return last_data
 
 
 get_tipo_cambio = PythonOperator(
@@ -55,9 +57,3 @@ notify = PythonOperator(
     python_callable= print_tipo_cambio_results,
     dag=dag
 )
-
-
-
-
-
-
