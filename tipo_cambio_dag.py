@@ -30,17 +30,7 @@ def _get_banxico_data():
 
     # Ahora puedes hacer consultas a la API
     last_data = api.get_lastdata()
-    
-    return last_data
 
-
-get_tipo_cambio = PythonOperator(
-    task_id="get_tipo_cambio",
-    python_callable= _get_banxico_data,
-    dag=dag,
-)
-
-def print_tipo_cambio_results():
     # Accede a los datos utilizando las claves
     serie = last_data['bmx']['series'][0]
     id_serie = serie['idSerie']
@@ -52,8 +42,9 @@ def print_tipo_cambio_results():
     print(f"fecha: {fecha}")
     print(f"dato: {dato}")
 
-notify = PythonOperator(
-    task_id="notify",
-    python_callable= print_tipo_cambio_results,
-    dag=dag
+
+get_tipo_cambio = PythonOperator(
+    task_id="get_tipo_cambio",
+    python_callable= _get_banxico_data,
+    dag=dag,
 )
